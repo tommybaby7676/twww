@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Kho Game Retro Việt | Chuyên Trang Đánh Giá &amp; Thử Nghiệm 2D</title>
+  <meta name="description" content="Chuyên trang lưu trữ, phân tích đồ họa và thử nghiệm game 2D Canvas phong cách phẳng chuẩn Kenney Studio. Đồ họa 60 FPS mượt mà." />
+  <meta name="robots" content="index, follow" />
+
+
+  <!-- Schema 結構化數據 -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Kho Game Retro Viet",
+    "description": "Chuyen trang danh gia ky thuat va thu nghiem tro choi phan xa 2D Canvas tren trinh duyet."
+  }
+  </script>
+
+  <!-- Google Fonts: Plus Jakarta Sans + Chakra Petch -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --kenney-bg: #edf2f7;
+      --kenney-card: rgba(255, 255, 255, 0.92);
+      --kenney-border: #cbd5e1;
+      --kenney-text: #2d3748;
+      --kenney-muted: #64748b;
+      --kenney-green: #2ecc71;
+      --kenney-green-edge: #27ae60;
+      --kenney-green-deep: #1e8449;
+      --kenney-orange: #f39c12;
+      --kenney-orange-edge: #d68910;
+      --kenney-blue: #3498db;
+      --font-main: 'Plus Jakarta Sans', sans-serif;
+      --font-arcade: 'Chakra Petch', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      background-color: var(--kenney-bg);
+      color: var(--kenney-text);
+      font-family: var(--font-main);
+      line-height: 1.5;
+      position: relative;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* 全覆蓋高斯模糊背景層 (硬體加速防卡頓) */
+    .portal-global-bg {
+      position: fixed;
+      inset: -20px;
+      z-index: -1;
+      background-image: url('./bg-lobby.webp'), url('./game.jfif');
+      background-size: cover;
+      background-position: center;
+      filter: blur(18px) brightness(0.95);
+      transform: scale(1.06);
+      pointer-events: none;
+    }
+
+    /* Kenney 風格導航 (微透磨砂玻璃) */
+    .portal-nav {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 2px solid var(--kenney-border);
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .portal-brand {
+      font-family: var(--font-arcade);
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--kenney-text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .brand-cube {
+      width: 16px;
+      height: 16px;
+      background: var(--kenney-orange);
+      border: 2px solid var(--kenney-orange-edge);
+      border-radius: 4px;
+    }
+    .nav-badge {
+      background: rgba(241, 245, 249, 0.9);
+      color: var(--kenney-blue);
+      font-family: var(--font-arcade);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--kenney-border);
+      white-space: nowrap;
+    }
+
+    .wrap {
+      max-width: 620px;
+      margin: 18px auto;
+      padding: 0 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Kenney 3D 毛玻璃卡片 */
+    .kenney-card {
+      background: var(--kenney-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 2px solid rgba(203, 213, 225, 0.9);
+      border-bottom: 4px solid var(--kenney-border);
+      border-radius: 14px;
+      padding: 20px 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    }
+
+    .card-tag {
+      display: inline-block;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      border: 1px solid #fde68a;
+    }
+
+    h1 {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--kenney-text);
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+
+    p {
+      font-size: 13px;
+      color: var(--kenney-muted);
+      margin-bottom: 14px;
+      line-height: 1.55;
+    }
+
+    .meta-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 18px;
+      padding: 8px 10px;
+      background: rgba(248, 250, 252, 0.85);
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      text-align: center;
+    }
+    .meta-item {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--kenney-text);
+    }
+
+    /* Kenney 招牌 3D 厚底按鈕 */
+    .btn-kenney-play {
+      display: block;
+      width: 100%;
+      background: var(--kenney-green);
+      color: #ffffff;
+      border: 2px solid var(--kenney-green-edge);
+      border-bottom: 5px solid var(--kenney-green-deep);
+      border-radius: 8px;
+      font-family: var(--font-arcade);
+      font-size: 16px;
+      font-weight: 800;
+      padding: 13px 16px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.08s ease;
+      box-shadow: 0 6px 12px rgba(46, 204, 113, 0.25);
+    }
+    .btn-kenney-play:hover { background: #27ae60; }
+    .btn-kenney-play:active {
+      transform: translateY(3px);
+      border-bottom: 2px solid var(--kenney-green-deep);
+      box-shadow: none;
+    }
+
+    /* 角色展示網格 */
+    .roster-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .roster-box {
+      background: rgba(248, 250, 252, 0.85);
+      border: 1.5px solid var(--kenney-border);
+      border-bottom: 3px solid var(--kenney-border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .roster-box img { width: 36px; height: 36px; object-fit: contain; }
+    .roster-name { font-size: 12px; font-weight: 800; color: var(--kenney-text); }
+    .roster-desc { font-size: 10.5px; color: var(--kenney-muted); }
+
+    /* 規格指標網格 */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .spec-item {
+      background: rgba(248, 250, 252, 0.85);
+      border: 1px solid var(--kenney-border);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+    .spec-val { font-size: 16px; font-weight: 800; color: var(--kenney-blue); font-family: var(--font-arcade); }
+    .spec-lbl { font-size: 10.5px; color: var(--kenney-muted); }
+
+    footer {
+      text-align: center;
+      padding: 20px 14px;
+      font-size: 11px;
+      color: #475569;
+      font-weight: 600;
+      border-top: 1px solid rgba(203, 213, 225, 0.8);
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      margin-top: 16px;
+      line-height: 1.6;
+    }
+
+    /* 掌機動態掛載節點 */
+    #arenaMountContainer {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: var(--kenney-bg);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- 全域固定模糊背景 (滑動零卡頓) -->
+  <div class="portal-global-bg"></div>
+
+  <div id="viewPortal">
+    <header class="portal-nav">
+      <div class="portal-brand">
+        <div class="brand-cube"></div>
+        KHO GAME RETRO VIỆT
+      </div>
+      <div class="nav-badge">BẢN ĐÁNH GIÁ 2026</div>
+    </header>
+
+    <div class="wrap">
+      <main class="kenney-card">
+        <span class="card-tag">Độc Quyền 2D Canvas</span>
+        <h1>Pocket Smash 2D: Đấu Trường Thần Thú Cầm Tay</h1>
+        <p>
+          Bản thử nghiệm cơ chế đập gạch retro vật lý đỉnh cao theo phong cách đồ họa phẳng chuẩn Kenney Studio. Tích hợp 5 linh thú dẫn đường và 3 tầng địa hình tự nhiên 60 FPS.
+        </p>
+
+        <div class="meta-bar">
+          <div class="meta-item">⭐ Điểm: 4.9/5</div>
+          <div class="meta-item">🎮 Nền: Web API</div>
+          <div class="meta-item">📦 Tải: &lt; 150KB</div>
+        </div>
+
+        <button class="btn-kenney-play" id="btnLaunchEngine">
+          CHƠI NGAY (TRÊN TRÌNH DUYỆT)
+        </button>
+      </main>
+
+      <section class="kenney-card">
+        <h2 style="font-size: 15px; color: var(--kenney-text); margin-bottom: 4px;">HỆ THỐNG 5 LINH THÚ DẪN ĐƯỜNG</h2>
+        <div class="roster-grid">
+          <div class="roster-box">
+            <img src="./animal-panda.png" alt="Panda">
+            <div>
+              <div class="roster-name">Gấu Trúc</div>
+              <div class="roster-desc">Thanh đỡ +15%</div>
+            </div>
+          </div>
+          <div class="roster-box">
+            <img src="./animal-tiger.png" alt="Tiger">
+            <div>
+              <div class="roster-name">Bạch Hổ</div>
+              <div class="roster-desc">Điểm Combo +25%</div>
+            </div>
+          </div>
+          <div class="roster-box">
+            <img src="./animal-pig.png" alt="Pig">
+            <div>
+              <div class="roster-name">Heo Hồng</div>
+              <div class="roster-desc">Khởi đầu 4 Tim</div>
+            </div>
+          </div>
+          <div class="roster-box">
+            <img src="./animal-lion.png" alt="Lion">
+            <div>
+              <div class="roster-name">Sư Tử</div>
+              <div class="roster-desc">Bùng nổ sao x2</div>
+            </div>
+          </div>
+          <div class="roster-box" style="grid-column: span 2;">
+            <img src="./animal-giraffe.png" alt="Giraffe">
+            <div>
+              <div class="roster-name">Hươu Đốm Linh Hoạt</div>
+              <div class="roster-desc">Độ nhạy cảm ứng cực mượt &amp; đón bóng chuẩn</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="kenney-card">
+        <h2 style="font-size: 15px; color: var(--kenney-text); margin-bottom: 4px;">THÔNG SỐ KỸ THUẬT &amp; HIỆU NĂNG</h2>
+        <div class="specs-grid">
+          <div class="spec-item">
+            <div class="spec-val">60 FPS</div>
+            <div class="spec-lbl">Khung hình dựng Canvas</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-val">&lt; 16ms</div>
+            <div class="spec-lbl">Độ trễ cảm ứng màn hình</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-val">0 KB</div>
+            <div class="spec-lbl">Theo dõi bên thứ ba</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-val">3 Tầng</div>
+            <div class="spec-lbl">Địa hình cảnh quan tự nhiên</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      <p>© 2026 Kho Game Retro Việt. Chuyên trang thử nghiệm kỹ thuật phi lợi nhuận.</p>
+      <p style="margin-top: 4px;">Bảo mật thông tin • Điều khoản dịch vụ • Miễn trừ trách nhiệm</p>
+    </footer>
+  </div>
+
+  <div id="arenaMountContainer"></div>
+
+  <!-- 動態載入腳本：點擊按鈕才請求外部遊戲引擎 -->
+  <script>
+    let isEngineLoaded = false;
+
+    document.getElementById("btnLaunchEngine").addEventListener("click", function() {
+      const mount = document.getElementById("arenaMountContainer");
+      mount.style.display = "block";
+      document.body.style.overflow = "hidden";
+
+      if (!isEngineLoaded) {
+        const script = document.createElement("script");
+        script.src = "./arcade-core.js";
+        script.onload = function() {
+          isEngineLoaded = true;
+          if (window.initArcadeEngine) window.initArcadeEngine();
+        };
+        script.onerror = function() {
+          alert("Lỗi: Không tìm thấy arcade-core.js trong cùng thư mục!");
+          mount.style.display = "none";
+          document.body.style.overflow = "auto";
+        };
+        document.body.appendChild(script);
+      } else {
+        if (window.initArcadeEngine) window.initArcadeEngine();
+      }
+    });
+
+    window.closeArcadeArena = function() {
+      document.getElementById("arenaMountContainer").style.display = "none";
+      document.body.style.overflow = "auto";
+    };
+  </script>
+</body>
+</html>
